@@ -41,3 +41,49 @@ test("GET /tasks returns 200 and a list of tasks", async () => {
     server.close();
   }
 });
+
+function startServer() {
+  return new Promise((resolve) => {
+    const server = app.listen(0, () => {
+      resolve(server);
+    });
+  });
+}
+
+test("POST /tasks creates a new task when title is provided", async (t) => {
+  const server = await startServer();
+  t.after(() => server.close());
+
+  const port = server.address().port;
+
+  const response = await fetch(`http://localhost:${port}/tasks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: "Faire les tests CI" })
+  });
+
+  const data = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(data.title, "Faire les tests CI");
+  assert.equal(data.completed, false);
+  assert.ok(data.id);
+});
+
+test("POST /tasks returns 400 Bad Request when title is missing", async (t) => {
+  const server = await startServer();
+  t.after(() => server.close());
+
+  const port = server.address().port;
+
+  const response = await fetch(`http://localhost:${port}/tasks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  });
+
+  const data = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.equal(data.error, "Title is required");
+});
