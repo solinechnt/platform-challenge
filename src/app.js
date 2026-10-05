@@ -3,12 +3,13 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(express.json());
+
 function calculateTotal(items) {
   if (!items || items.length === 0) {
     return 0;
   }
 
-  // Bug : on remplace l'addition par la multiplication 
   return items.reduce((total, item) => total + (item.price * item.quantity), 0);
 }
 
@@ -38,6 +39,23 @@ const tasks = [
 
 app.get("/tasks", (_req, res) => {
   res.status(200).json(tasks);
+});
+
+app.post("/tasks", (req, res) => {
+  const { title } = req.body || {};
+
+  if (!title || typeof title !== "string" || title.trim() === "") {
+    return res.status(400).json({ error: "Title is required" });
+  }
+
+  const newTask = {
+    id: tasks.length + 1,
+    title: title.trim(),
+    completed: false
+  };
+
+  tasks.push(newTask);
+  return res.status(201).json(newTask);
 });
 
 if (require.main === module) {
