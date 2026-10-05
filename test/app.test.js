@@ -86,4 +86,60 @@ test("POST /tasks returns 400 Bad Request when title is missing", async (t) => {
 
   assert.equal(response.status, 400);
   assert.equal(data.error, "Title is required");
+})
+;
+test("PATCH /tasks/:id updates an existing task", async (t) => {
+  const server = await startServer();
+  t.after(() => server.close());
+
+  const port = server.address().port;
+
+  const response = await fetch(`http://localhost:${port}/tasks/1`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ completed: true })
+  });
+
+  const data = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(data.id, 1);
+  assert.equal(data.title, "Initial task");
+  assert.equal(data.completed, true);
+});
+
+test("PATCH /tasks/:id returns 404 for an unknown task", async (t) => {
+  const server = await startServer();
+  t.after(() => server.close());
+
+  const port = server.address().port;
+
+  const response = await fetch(`http://localhost:${port}/tasks/999`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ completed: true })
+  });
+
+  const data = await response.json();
+
+  assert.equal(response.status, 404);
+  assert.equal(data.error, "Task not found");
+});
+
+test("PATCH /tasks/:id returns 400 for invalid input", async (t) => {
+  const server = await startServer();
+  t.after(() => server.close());
+
+  const port = server.address().port;
+
+  const response = await fetch(`http://localhost:${port}/tasks/1`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ completed: "true" })
+  });
+
+  const data = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.equal(data.error, "completed must be a boolean");
 });
