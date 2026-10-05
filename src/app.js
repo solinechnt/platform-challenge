@@ -4,8 +4,12 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 function calculateTotal(items) {
-  // INTENTIONAL DEFECT: students must diagnose this using the tests.
-  return items.reduce((total, item) => total + item.price + item.quantity, 0);
+  if (!items || items.length === 0) {
+    return 0;
+  }
+
+  // Bug : on remplace l'addition par la multiplication 
+  return items.reduce((total, item) => total + (item.price * item.quantity), 0);
 }
 
 app.get("/", (_req, res) => {
