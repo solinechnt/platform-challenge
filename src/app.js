@@ -77,6 +77,17 @@ app.patch("/tasks/:id", (req, res) => {
   return res.status(200).json(task);
 });
 
+app.delete("/tasks/:id", (req, res) => {
+  const taskId = Number(req.params.id);
+  const index = tasks.findIndex((item) => item.id === taskId);
+
+  if (index === -1) {
+    return res.status(404).json({ error: "Task not found" });
+  }
+
+  tasks.splice(index, 1);
+  return res.status(204).send();
+});
 
 if (require.main === module) {
   app.listen(port, () => {

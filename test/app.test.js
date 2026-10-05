@@ -86,8 +86,8 @@ test("POST /tasks returns 400 Bad Request when title is missing", async (t) => {
 
   assert.equal(response.status, 400);
   assert.equal(data.error, "Title is required");
-})
-;
+});
+
 test("PATCH /tasks/:id updates an existing task", async (t) => {
   const server = await startServer();
   t.after(() => server.close());
@@ -142,4 +142,41 @@ test("PATCH /tasks/:id returns 400 for invalid input", async (t) => {
 
   assert.equal(response.status, 400);
   assert.equal(data.error, "completed must be a boolean");
+});
+
+test("DELETE /tasks/:id removes an existing task", async (t) => {
+  const server = await startServer();
+  t.after(() => server.close());
+
+  const port = server.address().port;
+
+  const response = await fetch(`http://localhost:${port}/tasks/1`, {
+    method: "DELETE"
+  });
+
+  assert.equal(response.status, 204);
+
+  // Vérifie que la ressource n'est plus accessible
+  const verifyResponse = await fetch(`http://localhost:${port}/tasks/1`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ completed: true })
+  });
+  assert.equal(verifyResponse.status, 404);
+});
+
+test("DELETE /tasks/:id returns 404 for an unknown task", async (t) => {
+  const server = await startServer();
+  t.after(() => server.close());
+
+  const port = server.address().port;
+
+  const response = await fetch(`http://localhost:${port}/tasks/999`, {
+    method: "DELETE"
+  });
+
+  const data = await response.json();
+
+  assert.equal(response.status, 404);
+  assert.equal(data.error, "Task not found");
 });
