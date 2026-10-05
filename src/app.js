@@ -32,10 +32,18 @@ app.get("/total", (_req, res) => {
   res.json({ total: calculateTotal(items) });
 });
 
+const tasks = [
+  { id: 1, title: "Initial task", completed: false }
+];
+
+app.get("/tasks", (_req, res) => {
+  res.status(200).json(tasks);
+});
+
 if (require.main === module) {
   app.listen(port, () => {
     console.log(`Application listening on port ${port}`);
   });
 }
 
-module.exports = { app, calculateTotal };
+module.exports = { app, calculateTotal, tasks };
